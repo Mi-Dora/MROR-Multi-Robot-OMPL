@@ -198,9 +198,9 @@ void plan(const std::string plannerName)
     std::unordered_map<std::string, std::pair<int, int>> start_map{ {"Robot 0", {1, 1}}, 
                                                                     {"Robot 1", {5, 5}}, 
                                                                     {"Robot 2", {8, 8}} };
-    std::unordered_map<std::string, std::pair<int, int>> goal_map{  {"Robot 0", {8, 7}}, 
-                                                                    {"Robot 1", {2, 1}}, 
-                                                                    {"Robot 2", {5, 6}} };
+    std::unordered_map<std::string, std::pair<int, int>> goal_map{  {"Robot 0", {10, 25}},
+                                                                    {"Robot 1", {10, 20}},
+                                                                    {"Robot 2", {10, 15}} };
 
     // construct an instance of multi-robot space information
     auto ma_si(std::make_shared<omrc::SpaceInformation>());
@@ -218,7 +218,7 @@ void plan(const std::string plannerName)
         // set the bounds for the R^2 part of SE(2)
         ob::RealVectorBounds bounds(2);
         bounds.setLow(0);
-        bounds.setHigh(10);
+        bounds.setHigh(30);
 
         space->setBounds(bounds); 
 
@@ -227,8 +227,8 @@ void plan(const std::string plannerName)
 
         // set the bounds for the control space
         ob::RealVectorBounds cbounds(2);
-        cbounds.setLow(-0.3);
-        cbounds.setHigh(0.3);
+        cbounds.setLow(-3.0);
+        cbounds.setHigh(3.0);
 
         cspace->setBounds(cbounds);
 
@@ -301,7 +301,7 @@ void plan(const std::string plannerName)
         // ma_si->setSystemMerger(std::make_shared<myDemoSystemMerger>(ma_si));
 
         // set the merge bound of K-CBS
-        // planner->setMergeBound(0);
+//         planner->setMergeBound(50);
 
         // set the low-level solve time
         planner->setLowLevelSolveTime(0.5);

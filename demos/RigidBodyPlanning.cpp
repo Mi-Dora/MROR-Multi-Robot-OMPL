@@ -36,7 +36,9 @@
 
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/SE3StateSpace.h>
+#include <ompl/base/spaces/SE2StateSpace.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
+#include <ompl/geometric/planners/rrt/RRT.h>
 #include <ompl/geometric/SimpleSetup.h>
 
 #include <ompl/config.h>
@@ -66,12 +68,12 @@ bool isStateValid(const ob::State *state)
 void plan()
 {
     // construct the state space we are planning in
-    auto space(std::make_shared<ob::SE3StateSpace>());
+    auto space(std::make_shared<ob::SE2StateSpace>());
 
     // set the bounds for the R^3 part of SE(3)
-    ob::RealVectorBounds bounds(3);
-    bounds.setLow(-1);
-    bounds.setHigh(1);
+    ob::RealVectorBounds bounds(2);
+    bounds.setLow(-2);
+    bounds.setHigh(2);
 
     space->setBounds(bounds);
 
@@ -83,11 +85,13 @@ void plan()
 
     // create a random start state
     ob::ScopedState<> start(space);
-    start.random();
+//    start.random();
+    start->as<ompl::base::SE2StateSpace::StateType>()->setXY(-1.9, -1.9);
 
     // create a random goal state
     ob::ScopedState<> goal(space);
-    goal.random();
+    goal->as<ompl::base::SE2StateSpace::StateType>()->setXY(1.9, 1.9);
+//    goal.random();
 
     // create a problem instance
     auto pdef(std::make_shared<ob::ProblemDefinition>(si));
@@ -96,7 +100,7 @@ void plan()
     pdef->setStartAndGoalStates(start, goal);
 
     // create a planner for the defined space
-    auto planner(std::make_shared<og::RRTConnect>(si));
+    auto planner(std::make_shared<og::RRT>(si));
 
     // set the problem we are trying to solve for the planner
     planner->setProblemDefinition(pdef);
@@ -118,8 +122,9 @@ void plan()
     {
         // get the goal representation from the problem definition (not the same as the goal state)
         // and inquire about the found path
-        ob::PathPtr path = pdef->getSolutionPath();
+        og::PathGeometricPtr path = std::dynamic_pointer_cast<og::PathGeometric>(pdef->getSolutionPath());
         std::cout << "Found solution:" << std::endl;
+        path->interpolate();
 
         // print the path to screen
         path->print(std::cout);
@@ -183,7 +188,7 @@ int main(int /*argc*/, char ** /*argv*/)
 
     std::cout << std::endl << std::endl;
 
-    planWithSimpleSetup();
+//    planWithSimpleSetup();
 
     return 0;
 }

@@ -48,6 +48,7 @@
 #include <ompl/control/SimpleSetup.h>
 #include <ompl/config.h>
 #include <iostream>
+#include <chrono>
 
 namespace ob = ompl::base;
 namespace oc = ompl::control;
@@ -101,13 +102,13 @@ void propagate(const ob::State *start, const oc::Control *control, const double 
     const double* ctrl = control->as<oc::RealVectorControlSpace::ControlType>()->values;
 
     result->as<ob::SE2StateSpace::StateType>()->setXY(
-        pos[0] + ctrl[0] * duration * cos(rot),
-        pos[1] + ctrl[0] * duration * sin(rot));
+        pos[0] + ctrl[0],
+        pos[1] + ctrl[1]);
     result->as<ob::SE2StateSpace::StateType>()->setYaw(
-        rot    + ctrl[1] * duration);
+        0.0);
 }
 
-void plan()
+bool plan()
 {
 
     // construct the state space we are planning in
@@ -115,8 +116,8 @@ void plan()
 
     // set the bounds for the R^2 part of SE(2)
     ob::RealVectorBounds bounds(2);
-    bounds.setLow(-1);
-    bounds.setHigh(1);
+    bounds.setLow(-2);
+    bounds.setHigh(2);
 
     space->setBounds(bounds);
 
@@ -125,8 +126,8 @@ void plan()
 
     // set the bounds for the control space
     ob::RealVectorBounds cbounds(2);
-    cbounds.setLow(-0.3);
-    cbounds.setHigh(0.3);
+    cbounds.setLow(0);
+    cbounds.setHigh(0.1);
 
     cspace->setBounds(cbounds);
 
@@ -142,13 +143,15 @@ void plan()
 
     // create a start state
     ob::ScopedState<ob::SE2StateSpace> start(space);
-    start->setX(-0.5);
-    start->setY(0.0);
+    start->setX(-1.9);
+    start->setY(-1.9);
     start->setYaw(0.0);
 
     // create a goal state
     ob::ScopedState<ob::SE2StateSpace> goal(start);
-    goal->setX(0.5);
+    goal->setX(1.9);
+    goal->setY(1.9);
+    goal->setYaw(0.0);
 
     // create a problem instance
     auto pdef(std::make_shared<ob::ProblemDefinition>(si));
@@ -157,11 +160,11 @@ void plan()
     pdef->setStartAndGoalStates(start, goal, 0.1);
 
     // create a planner for the defined space
-    //auto planner(std::make_shared<oc::RRT>(si));
+    auto planner(std::make_shared<oc::RRT>(si));
     //auto planner(std::make_shared<oc::EST>(si));
     //auto planner(std::make_shared<oc::KPIECE1>(si));
-    auto decomp(std::make_shared<MyDecomposition>(32, bounds));
-    auto planner(std::make_shared<oc::SyclopEST>(si, decomp));
+//    auto decomp(std::make_shared<MyDecomposition>(32, bounds));
+//    auto planner(std::make_shared<oc::SyclopEST>(si, decomp));
     //auto planner(std::make_shared<oc::SyclopRRT>(si, decomp));
 
     // set the problem we are trying to solve for the planner
@@ -192,18 +195,19 @@ void plan()
     }
     else
         std::cout << "No solution found" << std::endl;
+    return solved;
 }
 
 
-void planWithSimpleSetup()
+bool planWithSimpleSetup()
 {
     // construct the state space we are planning in
     auto space(std::make_shared<ob::SE2StateSpace>());
 
     // set the bounds for the R^2 part of SE(2)
     ob::RealVectorBounds bounds(2);
-    bounds.setLow(-1);
-    bounds.setHigh(1);
+    bounds.setLow(-2);
+    bounds.setHigh(2);
 
     space->setBounds(bounds);
 
@@ -212,8 +216,8 @@ void planWithSimpleSetup()
 
     // set the bounds for the control space
     ob::RealVectorBounds cbounds(2);
-    cbounds.setLow(-0.3);
-    cbounds.setHigh(0.3);
+    cbounds.setLow(0);
+    cbounds.setHigh(0.1);
 
     cspace->setBounds(cbounds);
 
@@ -229,19 +233,25 @@ void planWithSimpleSetup()
 
     // create a start state
     ob::ScopedState<ob::SE2StateSpace> start(space);
-    start->setX(-0.5);
-    start->setY(0.0);
+    start->setX(-1.9);
+    start->setY(-1.9);
     start->setYaw(0.0);
 
-    // create a  goal state; use the hard way to set the elements
+    // create a goal state
     ob::ScopedState<ob::SE2StateSpace> goal(space);
-    (*goal)[0]->as<ob::RealVectorStateSpace::StateType>()->values[0] = 0.0;
-    (*goal)[0]->as<ob::RealVectorStateSpace::StateType>()->values[1] = 0.5;
-    (*goal)[1]->as<ob::SO2StateSpace::StateType>()->value = 0.0;
+    goal->setX(1.9);
+    goal->setY(1.9);
+    goal->setYaw(0.0);
+
+    // create a  goal state; use the hard way to set the elements
+//    ob::ScopedState<ob::SE2StateSpace> goal(space);
+//    (*goal)[0]->as<ob::RealVectorStateSpace::StateType>()->values[0] = 1.9;
+//    (*goal)[0]->as<ob::RealVectorStateSpace::StateType>()->values[1] = 1.9;
+//    (*goal)[1]->as<ob::SO2StateSpace::StateType>()->value = 0.0;
 
 
     // set the start and goal states
-    ss.setStartAndGoalStates(start, goal, 0.05);
+    ss.setStartAndGoalStates(start, goal, 0.1);
 
     // ss.setPlanner(std::make_shared<oc::PDST>(ss.getSpaceInformation()));
     // ss.getSpaceInformation()->setMinMaxControlDuration(1,100);
@@ -253,21 +263,42 @@ void planWithSimpleSetup()
         std::cout << "Found solution:" << std::endl;
         // print the path to screen
 
-        ss.getSolutionPath().printAsMatrix(std::cout);
+        ss.getSolutionPath().print(std::cout);
     }
     else
         std::cout << "No solution found" << std::endl;
+    return solved;
 }
 
 int main(int /*argc*/, char ** /*argv*/)
 {
     std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
+     bool solved = plan();
+     auto end = std::chrono::high_resolution_clock::now();
+     std::chrono::duration<double> elapsed = end - start;
 
-    // plan();
-    //
-    // std::cout << std::endl << std::endl;
-    //
-    planWithSimpleSetup();
+    if (solved) {
+        std::cout << "Found solution (elapsed time: " << elapsed.count() << " seconds):" << std::endl;
+        // (Rest of the solution processing...)
+    } else {
+        std::cout << "No solution found (elapsed time: " << elapsed.count() << " seconds)" << std::endl;
+    }
+
+     std::cout << std::endl << std::endl;
+
+
+     start = std::chrono::high_resolution_clock::now();
+     solved = planWithSimpleSetup();
+     end = std::chrono::high_resolution_clock::now();
+     elapsed = end - start;
+
+    if (solved) {
+        std::cout << "Found solution (elapsed time: " << elapsed.count() << " seconds):" << std::endl;
+        // (Rest of the solution processing...)
+    } else {
+        std::cout << "No solution found (elapsed time: " << elapsed.count() << " seconds)" << std::endl;
+    }
 
     return 0;
 }
