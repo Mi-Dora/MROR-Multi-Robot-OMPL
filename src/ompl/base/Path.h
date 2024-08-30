@@ -118,6 +118,12 @@ namespace ompl
             /** \brief Print the path to a stream */
             virtual void print(std::ostream &out) const = 0;
 
+            virtual std::vector<base::State *> &getStates() = 0;
+
+            virtual const base::State *getState(unsigned int index) const = 0;
+
+            virtual std::size_t getStateCount() const = 0;
+
         protected:
             /** \brief The space information this path is part of */
             SpaceInformationPtr si_;
