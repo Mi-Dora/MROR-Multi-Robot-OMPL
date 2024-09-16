@@ -88,6 +88,11 @@ ompl::control::PathControl::PathControl(const PathControl &path) : base::Path(pa
     copyFrom(path);
 }
 
+// ompl::control::PathControl::PathControl(const PathControl &path, bool flag) : base::Path(path.si_)
+// {
+//     // copyFrom(path);
+// }
+
 ompl::geometric::PathGeometric ompl::control::PathControl::asGeometric() const
 {
     PathControl pc(*this);
@@ -109,14 +114,13 @@ void ompl::control::PathControl::copyFrom(const PathControl &other)
 {
     states_.resize(other.states_.size());
     controls_.resize(other.controls_.size());
-
     for (unsigned int i = 0; i < states_.size(); ++i)
         states_[i] = si_->cloneState(other.states_[i]);
-
     const auto *si = static_cast<const SpaceInformation *>(si_.get());
     for (unsigned int i = 0; i < controls_.size(); ++i)
+    {   
         controls_[i] = si->cloneControl(other.controls_[i]);
-
+    }
     controlDurations_ = other.controlDurations_;
 }
 

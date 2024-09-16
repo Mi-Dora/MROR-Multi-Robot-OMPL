@@ -37,6 +37,7 @@
 #ifndef OMPL_CONTROL_PLANNERS_RRT_RRT_
 #define OMPL_CONTROL_PLANNERS_RRT_RRT_
 
+#include "ompl/util/ClassForward.h"
 #include "ompl/control/planners/PlannerIncludes.h"
 #include "ompl/datastructures/NearestNeighbors.h"
 
@@ -60,7 +61,7 @@ namespace ompl
            [[PDF]](http://ijr.sagepub.com/content/20/5/378.full.pdf)
            [[more]](http://msl.cs.uiuc.edu/~lavalle/rrtpubs.html)
         */
-
+        OMPL_CLASS_FORWARD(RRT); 
         /** \brief Rapidly-exploring Random Tree */
         class RRT : public base::Planner
         {

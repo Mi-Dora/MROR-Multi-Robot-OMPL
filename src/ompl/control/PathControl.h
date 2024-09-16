@@ -71,6 +71,9 @@ namespace ompl
             /** \brief Copy constructor */
             PathControl(const PathControl &path);
 
+            /** \brief For debug only */
+            // PathControl(const PathControl &path, bool flag);
+
             ~PathControl() override
             {
                 freeMemory();
@@ -172,7 +175,7 @@ namespace ompl
             /** \brief Get the control located at \e index along the path. This is the control that gets applied to the
              * state located at \e index */
             Control *getControl(unsigned int index)
-            {
+            {   
                 return controls_[index];
             }
 
@@ -203,6 +206,7 @@ namespace ompl
             }
 
             /** @} */
+            void copyFrom(const PathControl &other);
 
         protected:
             /** \brief The list of states that make up the path */
@@ -220,7 +224,7 @@ namespace ompl
             void freeMemory();
 
             /** \brief Copy the content of a path to this one */
-            void copyFrom(const PathControl &other);
+            // void copyFrom(const PathControl &other);
         };
     }
 }

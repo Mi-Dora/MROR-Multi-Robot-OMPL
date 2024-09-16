@@ -200,7 +200,10 @@ void ompl::control::CompoundControlSpace::copyControl(Control *destination, cons
     auto *cdest = static_cast<CompoundControl *>(destination);
     const auto *csrc = static_cast<const CompoundControl *>(source);
     for (unsigned int i = 0; i < componentCount_; ++i)
+    {
+        std::cout << "In copyControl: " << i << std::endl;
         components_[i]->copyControl(cdest->components[i], csrc->components[i]);
+    }
 }
 
 bool ompl::control::CompoundControlSpace::equalControls(const Control *control1, const Control *control2) const
